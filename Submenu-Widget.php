@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Submenu Widget
-Version: 0.3.3
+Version: 0.3.4
 Description: Show the submenu as a widget in a sidebar or use this shortcode to display one inline: <code>[submenu menu="<strong>MENU-NAME</strong>" id=<strong>INT</strong> depth=<strong>INT</strong>]</code> or <code>[submenu menu="<strong>MENU-NAME</strong>" slug="<strong>page-slug</strong>" depth=<strong>INT</strong>]</code> - slug takes precedence over ID.  If neither are used, the current $post->ID will be used. 
 Author: Eric King
 Author URI: http://webdeveric.com/

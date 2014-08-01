@@ -3,8 +3,8 @@ Contributors: webdeveric
 Donate link: http://webdeveric.com/donate/
 Tags: widget, submenu
 Requires at least: 3.0.0
-Tested up to: 3.8
-Stable tag: 0.3.3
+Tested up to: 3.9.1
+Stable tag: 0.3.4
 
 This plugin provides a widget to show the current submenu in the sidebar.
 
