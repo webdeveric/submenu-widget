@@ -146,7 +146,9 @@ class SubmenuWidget extends WP_Widget {
 				$active_items[] = $item;
 		}
 
-		$output = walk_nav_menu_tree( $active_items, $depth, array() );
+		$walk_nav_menu_tree_args = apply_filters('submenu_widget_walk_nav_menu_tree_args', new stdClass);
+
+		$output = walk_nav_menu_tree( $active_items, $depth, $walk_nav_menu_tree_args );
 
 		return $output != '' ? sprintf('<div class="%s"><ul>%s</ul></div>', $classname, $output ) : '';
 	}
