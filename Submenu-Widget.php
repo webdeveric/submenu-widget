@@ -9,15 +9,27 @@ Author URI: http://webdeveric.com/
 
 // http://wordpress.stackexchange.com/questions/2802/display-a-portion-branch-of-the-menu-tree-using-wp-nav-menu
 
-class SubmenuWidget extends WP_Widget {
+class SubmenuWidget extends WP_Widget
+{
 
-	function __construct( $name = 'Submenu Widget' ){
+	protected static $in_widget = false;
+
+	public static function in_widget()
+	{
+		return self::$in_widget;
+	}
+
+	function __construct( $name = 'Submenu Widget' )
+	{
 		parent::__construct( false, $name );
 	}
 
-	function widget( $args, $instance ){
-		if( ! isset( $instance['menu'] ) || $instance['menu'] == '' )
+	function widget( $args, $instance )
+	{
+		if ( ! isset( $instance['menu'] ) || $instance['menu'] == '' )
 			return;
+
+		self::$in_widget = true;
 
 		extract( $args );
 
@@ -34,36 +46,36 @@ class SubmenuWidget extends WP_Widget {
 			'current-menu-item'
 		);
 
-		if( $instance['show_parents'] )
+		if ( $instance['show_parents'] )
 			$menu_classes_to_check[] = 'current-menu-parent';
 
-		if( $instance['show_ancestors'] )
+		if ( $instance['show_ancestors'] )
 			$menu_classes_to_check[] = 'current-menu-ancestor';
 	
 		foreach ( $menu_items as $index => $item ) {
 
 			$save_id = false;
 
-			if( $instance['expand_all_submenus'] ){
+			if ( $instance['expand_all_submenus'] ) {
 				$save_id = in_array( $item->menu_item_parent, $parent_ids ) || (bool)array_intersect( $menu_classes_to_check, $item->classes );
 			} else {
 				$save_id = (bool)array_intersect( $menu_classes_to_check, $item->classes );
 			}
 
-			if( $save_id ){
+			if ( $save_id ) {
 				$parent_ids[] = $item->ID;
-				if( ! isset( $first_ancestor_title ) ){
+				if ( ! isset( $first_ancestor_title ) ) {
 					$first_ancestor_title = $item->title;
-					if( isset( $item->url ) && $item->url != '' )
+					if ( isset( $item->url ) && $item->url != '' )
 						$first_ancestor_url = $item->url;
 				}
 		    }
 		}
 
 		$active_items = array();
-		foreach( $menu_items as $index => $item ){
+		foreach ( $menu_items as $index => $item ) {
 			$intersection = array_intersect( $parent_ids, array( $item->menu_item_parent, $item->ID ) );
-			if( ! empty( $intersection ) && $parent_ids[0] != $item->ID )
+			if ( ! empty( $intersection ) && $parent_ids[0] != $item->ID )
 				$active_items[] = $item;
 		}
 
@@ -71,18 +83,23 @@ class SubmenuWidget extends WP_Widget {
 
 		$output = walk_nav_menu_tree( $active_items, $instance['depth'], $walk_nav_menu_tree_args );
 
-		if( $output != '' ){
-			echo $before_widget;
+		if ( $output != '' ) {
+
+			$widget_frame_classes = apply_filters('submenu_widget_frame_classes', array('submenu-widget-frame'), $args, $instance, $active_items );
+
+			echo $before_widget, '<div class="', implode(' ', $widget_frame_classes), '">';
 			printf('%s<a href="%s">%s</a>%s', $before_title, $first_ancestor_url, $first_ancestor_title, $after_title );
-			echo '<div class="submenu"><ul>'.  $output . '</ul></div>';
-			echo $after_widget;
+			echo '<div class="submenu"><ul>',  $output, '</ul></div></div>', $after_widget;
 		}
+
+		self::$in_widget = false;
 	}
 
 	/*
 		Added shortcode - Eric King - 2011-10-07
 	*/
-	public static function getSubMenu( $atts, $content = null, $code = '' ){
+	public static function getSubMenu( $atts, $content = null, $code = '' )
+	{
 		global $post;
 		$atts = shortcode_atts( array(
 			'menu'		=> '',
@@ -96,11 +113,11 @@ class SubmenuWidget extends WP_Widget {
 		extract( $atts );
 
 		// @added 2013-10-30
-		if( isset( $slug ) ){
+		if ( isset( $slug ) ) {
 
 			global $wpdb;
 			$post_id = $wpdb->get_var( $wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_name = %s and post_status = 'publish' LIMIT 1", $slug ) );
-			if( isset( $post_id ) ){
+			if ( isset( $post_id ) ) {
 				$id = intval( $post_id );
 				unset( $post_id );
 			}
@@ -116,10 +133,10 @@ class SubmenuWidget extends WP_Widget {
 		$id = isset( $id ) ? intval( $id ) : 0;
 
 		// Find the starting menu item.
-		if( $id > 0 ){
+		if ( $id > 0 ) {
 
-			foreach ( $menu_items as $index => $item ){
-				if( $item->object_id == $id ){
+			foreach ( $menu_items as $index => $item ) {
+				if ( $item->object_id == $id ) {
 					$parent_ids[] = $item->ID;
 					break;
 				}
@@ -127,8 +144,8 @@ class SubmenuWidget extends WP_Widget {
 
 		} else {
 
-			foreach ( $menu_items as $index => $item ){
-				if( $item->post_parent == $id )
+			foreach ( $menu_items as $index => $item ) {
+				if ( $item->post_parent == $id )
 					$parent_ids[] = $item->ID;
 			}
 
@@ -136,15 +153,14 @@ class SubmenuWidget extends WP_Widget {
 
 		// Find child menu items.
 		foreach ( $menu_items as $index => $item ) {
-			if( in_array( $item->menu_item_parent, $parent_ids ) ){
+			if ( in_array( $item->menu_item_parent, $parent_ids ) )
 				$parent_ids[] = $item->ID;
-		    }
 		}
 
 		// Save menu items if they have the correct parent.
-		foreach( $menu_items as $index => $item ){
+		foreach( $menu_items as $index => $item ) {
 			$intersection = array_intersect( $parent_ids, array( $item->menu_item_parent, $item->ID ) );
-			if( ! empty( $intersection ) && $parent_ids[0] != $item->ID )
+			if ( ! empty( $intersection ) && $parent_ids[0] != $item->ID )
 				$active_items[] = $item;
 		}
 
@@ -155,7 +171,8 @@ class SubmenuWidget extends WP_Widget {
 		return $output != '' ? sprintf('<div class="%s"><ul>%s</ul></div>', $classname, $output ) : '';
 	}
 
-	function update( $new_instance, $old_instance ){
+	function update( $new_instance, $old_instance )
+	{
 		$instance = $old_instance;
 		$instance['menu'] = $new_instance['menu'];
 		$instance['depth'] = intval( $new_instance['depth'] );
@@ -165,7 +182,8 @@ class SubmenuWidget extends WP_Widget {
 		return $instance;
 	}
 
-	function form( $instance ){
+	function form( $instance )
+	{
 		$menu = $instance['menu'];
 		$depth = isset( $instance['depth'] ) ? intval( $instance['depth'] ) : 0;
 		$expand_all_submenus = isset( $instance['expand_all_submenus'] ) ? $instance['expand_all_submenus'] : false;
@@ -176,11 +194,11 @@ class SubmenuWidget extends WP_Widget {
 			<label for="<?php echo $this->get_field_id('menu'); ?>"><?php _e('Menu:'); ?></label>
 			<?php
 				$menus = get_terms('nav_menu');
-				if( count( $menus ) > 0 ):?>
+				if ( count( $menus ) > 0 ):?>
 					<select id="<?php echo $this->get_field_id('menu'); ?>" name="<?php echo $this->get_field_name('menu'); ?>">
 					<option value=""></option>
 					<?php
-					foreach( $menus as $m ){
+					foreach( $menus as $m ) {
 						printf('<option value="%s" %s>%s</option>', $m->slug, selected( $menu, $m->slug, false ), $m->name );
 					}
 					?>
@@ -212,7 +230,8 @@ class SubmenuWidget extends WP_Widget {
 
 add_shortcode('submenu', array( 'SubmenuWidget', 'getSubMenu' ) );
 
-function SubmenuWidget_widgets_init(){
+function SubmenuWidget_widgets_init()
+{
 	register_widget('SubmenuWidget');
 }
 add_action('widgets_init', 'SubmenuWidget_widgets_init');
